@@ -7,7 +7,7 @@ import glob
 import time
 from utils import get_abbr_from_cam_model
 from telemetry_converter import TelemetryConverter
-
+from py_gpmf_parser.gopro_telemetry_extractor import GoProTelemetryExtractor
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
                         help="Path to calibration dataset")
     parser.add_argument('--path_to_build', 
                         help="Path to OpenCameraCalibrator build folder.",
-                        default='/media/Data/builds/openicc_release/applications') 
+                        default='/home/supremelyre/data/projects/OpenImuCameraCalibrator/build/applications') 
     parser.add_argument("--gravity_const", help="gravity constant", 
                         default=9.811104, type=float)
     parser.add_argument("--initial_static_duration_s", 
@@ -29,37 +29,33 @@ def main():
                         default=0, type=int)
     args = parser.parse_args()
 
-    path_to_file = os.path.dirname(os.path.abspath(__file__))
-    path_to_src = os.path.join(path_to_file,"../")
     # # 
     # # 0. Check inputs 
     # #
     bin_path = pjoin(args.path_to_build)
     cam_calib_path = args.path_static_calib_dataset
-    cam_calib_video = glob.glob(pjoin(cam_calib_path,"*.MP4"))
+    cam_calib_video = glob.glob(pjoin(cam_calib_path,"*.MP4"))[0]
     if len(cam_calib_video) == 0:
         print("Error! Could not find cam calibration video file with MP4 ending in path "+cam_calib_path)
         exit(-1)
     print(cam_calib_video)
 
-    # globals
-    cam_video_fn = os.path.basename(cam_calib_video[0])[:-4]
-    gopro_telemetry = glob.glob(pjoin(cam_calib_path,"G*.MP4"))[0][:-4]+".json"
-    gopro_telemetry_gen = glob.glob(pjoin(cam_calib_path,"G*.MP4"))[0][:-4]+"_gen.json"
+    # json telemetry globals
+    gopro_py_gmpf_telemetry = glob.glob(pjoin(cam_calib_video))[0][:-4]+"_pygpmf.json"
+    gopro_conv_telemetry = glob.glob(pjoin(cam_calib_video))[0][:-4]+".json"
 
     #
     # 1. Extracting GoPro telemetry
     #   
-    js_extract_file = pjoin(path_to_src,"javascript","extract_metadata.js")
     print("==================================================================")
     print("Extracting GoPro telemetry.")
     print("==================================================================")
     start = time.time()
-    telemetry_extract = Popen(["node",js_extract_file,
-                       cam_calib_path,
-                       cam_video_fn+".MP4",
-                       cam_calib_path])
-    error = telemetry_extract.wait()
+    extractor = GoProTelemetryExtractor(os.path.join(cam_calib_video))
+    extractor.open_source()
+    extractor.extract_data_to_json(os.path.join(cam_calib_path, gopro_py_gmpf_telemetry),
+            ["ACCL", "GYRO", "GPS5", "GPSP", "GPSU", "GPSF", "GRAV", "MAGN", "CORI", "IORI"])
+    extractor.close_source()
     print("==================================================================")
     print("Telemetry extraction took {:.2f}s.".format(time.time()-start))
     print("==================================================================")
@@ -68,7 +64,7 @@ def main():
     # 2. Convert gopro json telemetry to common format
     #
     telemetry_conv = TelemetryConverter()
-    telemetry_conv.convert_gopro_telemetry_file(gopro_telemetry, gopro_telemetry_gen)
+    telemetry_conv.convert_pygpmf_telemetry(gopro_py_gmpf_telemetry, gopro_conv_telemetry)
 
     #
     # 3. Perform static multi pose calibration
@@ -78,7 +74,7 @@ def main():
     print("==================================================================")
     start = time.time()
     spline_init = Popen([pjoin(bin_path,"static_imu_calibration"),
-                       "--telemetry_json="+gopro_telemetry_gen,
+                       "--telemetry_json="+gopro_conv_telemetry,
                        "--gravity_magnitude="+str(args.gravity_const),
                        "--initial_static_interval_s="+str(args.initial_static_duration_s),
                        "--verbose="+str(args.verbose), 
