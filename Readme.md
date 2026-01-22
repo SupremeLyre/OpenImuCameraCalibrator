@@ -63,11 +63,8 @@ Dataset | Time offset IMU to camera | dt_r3 / dt_so3 | T_camera_to_imu (qw,qx,qy
 
 Tested on Ubuntu 18.04 and 20.04. and 22.04
 
-1. Clone and build [OpenCV](https://github.com/opencv/opencv) >= 4.5.0 **with** [contrib](https://github.com/opencv/opencv) modules. Latter are needed for Aruco marker detection.
-On Ubuntu 22.04 you can also just install it from apt:
-``` bash
-sudo apt-get install libopencv-dev libopencv-contrib-dev
-``` 
+1. Clone and build [OpenCV](https://github.com/opencv/opencv) **>= 4.12.0** **with** [contrib](https://github.com/opencv/opencv) modules. Latter are needed for Aruco marker detection.
+> NOTICE: This version have changed some features compared to the version 4.5.0. I use this version after fixing some bugs. Please make sure to use the correct version. I forget whether it is necessary to use the contrib modules. Maybe Aruco marker detection is a release in this version.
 
 2. Install [ceres 2.1](http://ceres-solver.org/installation.html)
 ``` bash

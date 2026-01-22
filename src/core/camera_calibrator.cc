@@ -16,7 +16,7 @@
 #include "OpenCameraCalibrator/core/camera_calibrator.h"
 
 #include <opencv2/aruco/charuco.hpp>
-#include <opencv2/aruco/dictionary.hpp>
+// #include <opencv2/aruco/dictionary.hpp>
 #include <opencv2/opencv.hpp>
 #include <theia/io/reconstruction_writer.h>
 #include <theia/io/write_ply_file.h>

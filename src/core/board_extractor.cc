@@ -46,7 +46,7 @@ bool BoardExtractor::InitializeCharucoBoard(std::string path_to_detector_params,
                                             int squaresY,
                                             int dictionaryId) {
   // load images from folder
-  detector_params_ = aruco::DetectorParameters::create();
+  detector_params_ = cv::makePtr<aruco::DetectorParameters>();
 
   if (!OpenICC::utils::ReadDetectorParameters(path_to_detector_params,
                                               detector_params_)) {
@@ -54,14 +54,15 @@ bool BoardExtractor::InitializeCharucoBoard(std::string path_to_detector_params,
     return 0;
   }
 
-  dictionary_ = aruco::getPredefinedDictionary(
-      aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+  dictionary_ = cv::makePtr<aruco::Dictionary>(
+      aruco::getPredefinedDictionary(dictionaryId));
   // create charuco board object
-  charucoboard_ = aruco::CharucoBoard::create(
-      squaresX, squaresY, square_length, marker_length, dictionary_);
+  charucoboard_ = cv::makePtr<aruco::CharucoBoard>(
+      cv::Size(squaresX, squaresY), square_length, marker_length, *dictionary_);
+  charucoboard_->setLegacyPattern(true); // opencv 4.6+ should use legacy pattern
   board_ = charucoboard_.staticCast<aruco::Board>();
 
-  board_pts3d_.push_back(charucoboard_->chessboardCorners);
+  board_pts3d_.push_back(charucoboard_->getChessboardCorners());
   board_type_ = BoardType::CHARUCO;
 
   square_length_m_ = square_length;
@@ -147,7 +148,8 @@ bool BoardExtractor::ExtractBoard(const Mat& image,
                                  rejected_markers,
                                  cv::noArray(),
                                  cv::noArray(),
-                                 5, -1.);
+                                 5,
+                                 -1.);
 
     // interpolate charuco corners
     int interpolatedCorners = 0;

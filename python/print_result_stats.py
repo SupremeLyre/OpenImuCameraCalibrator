@@ -77,6 +77,7 @@ def main():
     ax[1].set_ylabel("rad/s")
     fig.legend(ax, labels=labels, loc="upper right", borderaxespad=0.1) 
     plt.show()
+    plt.savefig(os.path.join(os.path.dirname(args.path_results), "accl_gyro_spline_vs_imu.png"),dpi=300)
 
     fig, ax = plt.subplots(2,1)
     ax[0].set_title("Accelerometer bias")
@@ -93,6 +94,7 @@ def main():
     ax[1].set_xlabel("time")
     ax[1].set_ylabel("rad/s")
     plt.show()
+    plt.savefig(os.path.join(os.path.dirname(args.path_results), "accl_gyro_bias.png"),dpi=300)
 
 if __name__ == "__main__":
     main()

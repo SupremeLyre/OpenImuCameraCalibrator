@@ -447,7 +447,7 @@ int main(int argc, char* argv[]) {
           1.0,
           cv::Scalar(255, 0, 0));
       cv::imshow("spline reprojection", image);
-      cv::waitKey(0);
+    //   cv::waitKey(0);
       ++nr_frames;
       if (nr_frames > 500) break;
     }

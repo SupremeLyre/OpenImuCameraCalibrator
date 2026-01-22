@@ -17,7 +17,7 @@
 
 #include <opencv2/aruco.hpp>
 #include <opencv2/aruco/charuco.hpp>
-#include <opencv2/aruco/dictionary.hpp>
+// #include <opencv2/aruco/dictionary.hpp>
 #include <opencv2/opencv.hpp>
 
 // Input/output files.
@@ -39,20 +39,19 @@ int main(int argc, char* argv[]) {
   int borderBits = 1;
   bool showImage = false;
 
-  cv::Ptr<cv::aruco::Dictionary> dictionary =
-      cv::aruco::getPredefinedDictionary(
-          cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+  cv::Ptr<cv::aruco::Dictionary> dictionary = cv::makePtr<cv::aruco::Dictionary>(
+      cv::aruco::getPredefinedDictionary(dictionaryId));
 
   cv::Size imageSize;
   imageSize.width = squaresX * squareLength + 2 * margins;
   imageSize.height = squaresY * squareLength + 2 * margins;
 
-  cv::Ptr<cv::aruco::CharucoBoard> board = cv::aruco::CharucoBoard::create(
-      squaresX, squaresY, (float)squareLength, (float)markerLength, dictionary);
+  cv::Ptr<cv::aruco::CharucoBoard> board = cv::makePtr<cv::aruco::CharucoBoard>(
+      cv::Size(squaresX, squaresY), (float)squareLength, (float)markerLength, *dictionary);
 
   // show created board
   cv::Mat boardImage;
-  board->draw(imageSize, boardImage, margins, borderBits);
+  board->generateImage(imageSize, boardImage, margins, borderBits);
 
   if (showImage) {
     cv::imshow("board", boardImage);
